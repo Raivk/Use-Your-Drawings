@@ -26,7 +26,7 @@ app.get('/', function(req, res){
 });
 
 //Register event on connection of new client
-io.on('connection', function(){
+io.on('connection', function(socket){
   socket.on('start_game', function(){
         //CALCULER UNE CLE
         console.log("ouverture d'un salon prive");
@@ -47,6 +47,8 @@ io.on('connection', function(){
             console.log("cancel game");
             //CALL DISCONNECT ON EACH CONNECTED CLIENT
             delete rooms[key];
+
+            socket.off('cancel_game');
         });
     });
 });
