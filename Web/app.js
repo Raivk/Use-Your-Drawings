@@ -28,29 +28,44 @@ app.get('/', function(req, res){
 //Register event on connection of new client
 io.on('connection', function(socket){
   socket.on('start_game', function(){
-        //CALCULER UNE CLE
-        console.log("ouverture d'un salon prive");
+      //CALCULER UNE CLE
+      console.log("ouverture d'un salon prive");
 
-        var key = makeid();
+      var key = makeid();
 
-        rooms[key] = {
-            'host_socket' : socket,
-            'key' : key,
-            'players' : []
-        }
+      rooms[key] = {
+          'host_socket' : socket,
+          'key' : key,
+          'players' : []
+      }
 
-        socket.emit('room_opened',{'key_code':key});
+      socket.emit('room_opened',{'key_code':key});
 
-        //IN CASE THE GAME IS CANCELED
-        socket.on('cancel_game',function(){
-            //SUPPRESSION DU SALON
-            console.log("cancel game");
-            //CALL DISCONNECT ON EACH CONNECTED CLIENT
-            delete rooms[key];
+      //IN CASE THE GAME IS CANCELED
+      socket.on('cancel_game',function(){
+          //SUPPRESSION DU SALON
+          console.log("cancel game");
+          //CALL DISCONNECT ON EACH CONNECTED CLIENT
+          delete rooms[key];
 
-            socket.off('cancel_game');
-        });
-    });
+          socket.off('cancel_game');
+      });
+  });
+
+  socket.on('disconnect', function() {
+    console.log('Player disconnection');
+
+    for(room in rooms){
+      if(rooms[room]['host_socket'] == socket){
+        console.log("fermeture d'un salon")
+        // We found a room where host was hosting !
+        //LOOKING THROUGHT OTHER SOCKETS TO NOTIFY THEM OF DISCONNECTION
+
+        //REMOVE ROOM !
+        delete rooms[room];
+      }
+    }
+ });
 });
 
 //port = process.env.PORT
